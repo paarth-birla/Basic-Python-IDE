@@ -20,16 +20,14 @@ filename = ''
 File Functions
 '''
 # New file
-def _new():
+def _new(*args):
     editor.delete('1.0', END)
 
 # Open file
-def _open():
-    global filename
+def _open(*args):
     editor.delete('1.0', END)
     openfile = filedialog.askopenfilename(title='Open File', filetypes=(('Text Files', '*.txt'), ('Python Files', '*.py'), ('All files', '*.*')))
     if openfile:
-        filename = openfile
         _file = open(openfile, 'r')
         data = _file.read()
         editor.insert(END, data)
@@ -39,23 +37,18 @@ def _open():
         return
 
 # Save file
-def _save():
-    try:
-        if filename:
-            data = editor.get('1.0', END)
-            outfile = open(filename, 'w')
-            outfile.write(data)
-            outfile.close()
-    
-    except Exception as e:
-        messagebox.showerror("Exception", e)
-
-# Save As
-def _saveas():
+def _save(*args):
     pass
 
+# Save As
+def _saveas(*args):
+    filename = filedialog.asksaveasfilename(defaultextension='*.txt', title='Save File', filetypes=(('Text Files', '*.txt'), ('Python Files', '*.py'), ('All files', '*.*')))
+    if filename:
+        filename = open(filename, 'w')
+        filename.write(editor.get('1.0', END))
+        filename.close()
 # Exit
-def _exit():
+def _exit(*args):
     user = messagebox.askyesno('Warning', 'Do you want to exit?')
     if user > 0:
         root.destroy()
@@ -68,24 +61,21 @@ def _exit():
 Edit Functions
 '''
 # Copy
-def _copy():
-    pass
+def _copy(*args):
+    editor.event_generate('<<Copy>>')
 
 # Cut
-def _cut():
-    pass
+def _cut(*args):
+    editor.event_generate('<<Cut>>')
 
 # Paste
-def _paste():
-    pass
+def _paste(*args):
+    editor.event_generate('<<Paste>>')
 
 # Undo
-def _undo():
+def _undo(*args):
     pass
 
-# Redo
-def _redo():
-    pass
 
 
 '''
@@ -178,6 +168,25 @@ def _fixedsysfont():
     editor.config(font=FONT)
 
 
+'''
+Help Functions
+'''
+def _about():
+    pass
+
+
+'''
+Shorcuts function
+'''
+def shortcuts():
+    editor.bind('<Control-n>', _new)
+    editor.bind('<Control-o>', _open)
+    editor.bind('<Control-s>', _save)
+    editor.bind('<Control-k>', _saveas)
+    editor.bind('<Control-c>', _copy)
+    editor.bind('<Control-x>', _cut)
+    editor.bind('<Control-v>', _paste)
+    editor.bind('<Control-u>', _undo)
 
 '''
 ==========================================GUI==========================================
@@ -198,6 +207,7 @@ scrollbar.pack(side=RIGHT, fill=Y)
 
 editor = Text(main_frame, width=500, height=550, font=FONT, background=BACKGROUND, foreground=FOREGROUND, selectbackground=ACTIVE_BACKGROUND, selectforeground=FOREGROUND, yscrollcommand=scrollbar.set)
 editor.pack(expand=True, fill=BOTH)
+shortcuts()
 
 scrollbar.config(command=editor.yview)
 
@@ -211,7 +221,7 @@ def _file():
     file.add_command(label='New', accelerator='Ctrl+N', command=_new)
     file.add_command(label='Open', accelerator='Ctrl+O', command=_open)
     file.add_command(label='Save', accelerator='Ctrl+S', command=_save)
-    file.add_command(label='Save As', accelerator='Ctrl+Shift+S', command=_saveas)
+    file.add_command(label='Save As', accelerator='Ctrl+K', command=_saveas)
     file.add_separator()
     file.add_command(label='Exit', command=_exit)
 
@@ -221,12 +231,11 @@ Edit Menu
 def _edit():
     edit = Menu(menu_bar, tearoff=0)
     menu_bar.add_cascade(label='Edit', menu=edit)
-    edit.add_command(label='Undo', accelerator='Ctrl+N', command=_new)
-    edit.add_command(label='Redo', accelerator='Ctrl+N', command=_new)
+    edit.add_command(label='Undo', accelerator='Ctrl+U', command=_new)
     edit.add_separator()
-    edit.add_command(label='Cut', accelerator='Ctrl+N', command=_new)
-    edit.add_command(label='Copy', accelerator='Ctrl+O', command=_open)
-    edit.add_command(label='Paste', accelerator='Ctrl+S', command=_save)
+    edit.add_command(label='Cut', accelerator='Ctrl+X', command=_cut)
+    edit.add_command(label='Copy', accelerator='Ctrl+C', command=_copy)
+    edit.add_command(label='Paste', accelerator='Ctrl+V', command=_paste)
     edit.add_separator()
 
 '''
@@ -263,10 +272,15 @@ def _view():
 
     menu_bar.add_cascade(label="View", menu=view)
 
+def _help():
+    help = Menu(menu_bar, tearoff=0)
+    help.add_command(label='About', command=_about)
+    menu_bar.add_cascade(label='Help', menu=help)
 # call functions
 _file()
 _edit()
 _run()
 _view()
+_help()
 root.config(menu = menu_bar)
 root.mainloop()
